@@ -1,3 +1,14 @@
+## v0.3.0 (2026-02-05)
+
+### Feat
+
+- implement automatic notification timer
+- add dynamic menu with muda and config persistence
+
+### Fix
+
+- **macos**: resolve 'use_default' dialog by setting bundle identifier directly
+
 ## v0.2.0 (2026-02-05)
 
 ### Feat
