@@ -14,6 +14,10 @@ jobs:
     permissions:
       contents: write
 
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      version: ${{ steps.version.outputs.version }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -51,6 +55,7 @@ jobs:
           echo "$CHANGELOG_SECTION" > release_notes.md
 
       - name: Create GitHub Release
+        id: create_release
         uses: softprops/action-gh-release@v2
         with:
           name: Release ${{ steps.version.outputs.tag }}
@@ -65,3 +70,57 @@ jobs:
         run: |
           echo "✅ GitHub Release created for version ${{ steps.version.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
           echo "📦 Release URL: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ steps.version.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+
+  build-macos:
+    name: Build macOS DMG
+    runs-on: macos-latest
+    needs: create-release
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install cargo-bundle
+        run: cargo install cargo-bundle
+
+      - name: Install create-dmg
+        run: brew install create-dmg
+
+      - name: Build release
+        run: cargo build --release
+
+      - name: Create app bundle
+        run: cargo bundle --release
+
+      - name: Create DMG
+        run: |
+          VERSION="${{ needs.create-release.outputs.version }}"
+          create-dmg \
+            --volname "HydrationRustminder" \
+            --volicon "droplet.png" \
+            --window-pos 200 120 \
+            --window-size 800 400 \
+            --icon-size 100 \
+            --icon "HydrationRustminder.app" 200 190 \
+            --hide-extension "HydrationRustminder.app" \
+            --app-drop-link 600 185 \
+            "HydrationRustminder-${VERSION}.dmg" \
+            "target/release/bundle/osx/HydrationRustminder.app"
+
+      - name: Upload DMG to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: HydrationRustminder-*.dmg
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Summary
+        run: |
+          echo "✅ macOS DMG built and uploaded" >> $GITHUB_STEP_SUMMARY
+          ls -lh HydrationRustminder-*.dmg >> $GITHUB_STEP_SUMMARY
