@@ -1,29 +1,18 @@
 use log::info;
+use muda::{Menu, MenuEvent};
 use std::error::Error;
-use tray_icon::{
-    Icon, TrayIcon, TrayIconBuilder,
-    menu::{Menu, MenuEvent, MenuItem},
-};
+use tray_icon::{Icon, TrayIcon, TrayIconBuilder};
 
 pub struct TrayManager {
     _tray_icon: TrayIcon,
-    #[allow(dead_code)]
-    menu: Menu,
 }
 
 impl TrayManager {
-    pub fn new() -> Result<Self, Box<dyn Error>> {
+    pub fn new(menu: &Menu) -> Result<Self, Box<dyn Error>> {
         info!("Creating tray icon...");
 
-        // Create menu items
-        let quit_item = MenuItem::new("Quit", true, None);
-
-        // Build menu
-        let menu = Menu::new();
-        menu.append(&quit_item)?;
-
         // Load icon
-        let icon_bytes = include_bytes!("../droplet.png");
+        let icon_bytes = include_bytes!("../../droplet.png");
         info!("Icon loaded, size: {} bytes", icon_bytes.len());
 
         let img = image::load_from_memory(icon_bytes)?;
@@ -42,13 +31,10 @@ impl TrayManager {
 
         Ok(TrayManager {
             _tray_icon: tray_icon,
-            menu,
         })
     }
 
-    pub fn handle_events(&self) {
-        if let Ok(event) = MenuEvent::receiver().try_recv() {
-            info!("Menu event: {:?}", event);
-        }
+    pub fn handle_events(&self) -> Option<MenuEvent> {
+        MenuEvent::receiver().try_recv().ok()
     }
 }
