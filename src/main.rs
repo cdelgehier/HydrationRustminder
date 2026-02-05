@@ -1,11 +1,13 @@
 mod config;
 mod notifier;
+mod timer;
 mod ui;
 
 use config::Config;
 use log::{error, info};
 use notifier::Notifier;
 use std::process;
+use timer::HydrationTimer;
 use ui::{MenuManager, TrayManager};
 use winit::event_loop::{ControlFlow, EventLoop};
 
@@ -24,6 +26,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         error!("Failed to send startup notification: {}", e);
     }
 
+    // Create timer
+    let mut timer = HydrationTimer::new();
+
     // Create event loop (required for macOS tray icon)
     let event_loop = EventLoop::new()?;
     event_loop.set_control_flow(ControlFlow::Wait);
@@ -38,6 +43,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Run the event loop
     #[allow(deprecated)]
     event_loop.run(move |_event, elwt| {
+        // Check if we should send a notification
+        if timer.should_send_notification(&config) {
+            info!("Sending scheduled hydration reminder");
+            if let Err(e) = notifier.send_hydration_reminder() {
+                error!("Failed to send notification: {}", e);
+            } else {
+                timer.mark_notification_sent();
+            }
+        }
+
         // Handle tray events
         if let Some(event) = tray.handle_events() {
             info!("Menu event: {:?}", event);
