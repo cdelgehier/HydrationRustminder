@@ -68,3 +68,39 @@ impl Config {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_default_config_values() {
+        let config = Config::default();
+
+        assert_eq!(config.start_hour, 9);
+        assert_eq!(config.end_hour, 18);
+        assert_eq!(config.interval_minutes, 30);
+        assert_eq!(config.reminder_minutes, 5);
+    }
+
+    #[test]
+    fn test_config_serialization_roundtrip() {
+        let original = Config {
+            start_hour: 10,
+            end_hour: 17,
+            interval_minutes: 45,
+            reminder_minutes: 10,
+        };
+
+        // Serialize to YAML
+        let yaml = serde_yaml::to_string(&original).expect("Failed to serialize");
+
+        // Deserialize back
+        let deserialized: Config = serde_yaml::from_str(&yaml).expect("Failed to deserialize");
+
+        assert_eq!(deserialized.start_hour, original.start_hour);
+        assert_eq!(deserialized.end_hour, original.end_hour);
+        assert_eq!(deserialized.interval_minutes, original.interval_minutes);
+        assert_eq!(deserialized.reminder_minutes, original.reminder_minutes);
+    }
+}
