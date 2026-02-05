@@ -2,11 +2,14 @@
 name = "hydration-rustminder"
 version = "0.1.0"
 edition = "2024"
+authors = ["Cédric Delgehier <cdelgehier@users.noreply.github.com>"]
+description = "A lightweight macOS tray application for hydration reminders"
+license = "MIT"
+repository = "https://github.com/cdelgehier/HydrationRustminder"
 
 [dependencies]
 tray-icon = "0.19"
 muda = "0.15"
-notify-rust = "4.11"
 chrono = "0.4"
 serde = { version = "1.0", features = ["derive"] }
 serde_yaml = "0.9"
@@ -15,3 +18,21 @@ log = "0.4"
 env_logger = "0.11"
 image = "0.25"
 winit = "0.30"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+mac-notification-sys = "0.6"
+
+[target.'cfg(not(target_os = "macos"))'.dependencies]
+notify-rust = "4.11"
+
+[package.metadata.bundle]
+name = "HydrationRustminder"
+identifier = "com.delgehier.hydration-rustminder"
+icon = ["droplet.png"]
+version = "0.1.0"
+copyright = "Copyright 2026 Cédric Delgehier"
+category = "Utility"
+short_description = "Stay hydrated with gentle reminders"
+long_description = "A lightweight macOS tray application that sends periodic hydration reminders during work hours."
+osx_minimum_system_version = "13.0"
+osx_info_plist_exts = ["Info.plist.ext"]
