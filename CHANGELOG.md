@@ -1,3 +1,9 @@
+## v0.3.1 (2026-02-06)
+
+### Fix
+
+- set a correct package.metadata.bundle identifier
+
 ## v0.3.0 (2026-02-05)
 
 ### Feat
