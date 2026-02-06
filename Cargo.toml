@@ -27,7 +27,7 @@ notify-rust = "4.11"
 
 [package.metadata.bundle]
 name = "HydrationRustminder"
-identifier = "com.delgehier.hydration-rustminder"
+identifier = "com.cdelgehier.hydration-rustminder"
 icon = ["droplet.png"]
 version = "0.1.0"
 copyright = "Copyright 2026 Cédric Delgehier"
